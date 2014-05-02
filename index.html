@@ -1,95 +1,177 @@
 <!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=640" />
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Verilog Plusargs : Verilog Plusargs" />
 
-    <link rel="stylesheet" href="stylesheets/core.css" media="screen"/>
-    <link rel="stylesheet" href="stylesheets/mobile.css" media="handheld, only screen and (max-device-width:640px)"/>
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <script type="text/javascript" src="javascripts/modernizr.js"></script>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script type="text/javascript" src="javascripts/headsmart.min.js"></script>
-    <script type="text/javascript">
-      $(document).ready(function () {
-        $('#main_content').headsmart()
-      })
-    </script>
-    <title>Cziesler.github.io by cziesler</title>
+    <title>Verilog Plusargs</title>
   </head>
 
   <body>
-    <a id="forkme_banner" href="https://github.com/cziesler">View on GitHub</a>
-    <div class="shell">
 
-      <header>
-        <span class="ribbon-outer">
-          <span class="ribbon-inner">
-            <h1>Cziesler.github.io</h1>
-            <h2>Blog</h2>
-          </span>
-          <span class="left-tail"></span>
-          <span class="right-tail"></span>
-        </span>
-      </header>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/cziesler">View on GitHub</a>
 
-      <div id="no-downloads">
-        <span class="inner">
-        </span>
-      </div>
+          <h1 id="project_title">Verilog Plusargs</h1>
+          <h2 id="project_tagline">Verilog Plusargs</h2>
 
+        </header>
+    </div>
 
-      <span class="banner-fix"></span>
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>In Verilog, plusargs can be used to change the behavior of a program without recompiling. This can be great if there are a lot of tests to run with the same testbench.</p>
 
+<p>There are two calls for plusargs in Verilog: <code>$test$plusargs</code> and <code>$value$plusargs</code>.</p>
 
-      <section id="main_content">
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+<p>The first call, <code>$test$plusargs("string")</code>, returns a boolean value. If the plusarg given by <code>"string"</code> was passed into the program at runtime, the call returns true. Otherwise, the call returns false.</p>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>The second call, <code>$value$plusargs("string=%d", val)</code>, also returns a boolean value depending on if the plusarg given by <code>"string"</code> was passed in. It also will load the register given by <code>val</code> based on the format given by <code>%d</code> in this example. Here is the list of formats available:</p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+<table>
+<thead><tr>
+<th>Format</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>%b</code></td>
+<td>read as binary value</td>
+</tr>
+<tr>
+<td><code>%o</code></td>
+<td>read as octal value</td>
+</tr>
+<tr>
+<td><code>%d</code></td>
+<td>read as decimal value</td>
+</tr>
+<tr>
+<td><code>%h</code></td>
+<td>read as hex value</td>
+</tr>
+<tr>
+<td><code>%e</code></td>
+<td>read as real value, exponential format</td>
+</tr>
+<tr>
+<td><code>%f</code></td>
+<td>read as real value, decimal format</td>
+</tr>
+<tr>
+<td><code>%g</code></td>
+<td>read as real value, shortest format</td>
+</tr>
+<tr>
+<td><code>%s</code></td>
+<td>read as character string</td>
+</tr>
+</tbody>
+</table><p>Note that the <code>$value$plusargs</code> call is available since Verilog-2001. Before that, Verilog only supported the <code>$test$plusargs</code> call.</p>
+
+<p>Here's a simple example. Here, the <code>my_port</code> variable is set to <code>1234</code> by default, unless the <code>+port=</code> plusarg is passed in on the command line when running the executable.</p>
+
+<div class="highlight highlight-verilog"><pre><span class="k">module</span> <span class="n">test</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">my_port</span><span class="p">;</span>
+
+<span class="k">initial</span> <span class="k">begin</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="err">$</span><span class="n">value</span><span class="err">$</span><span class="n">plusargs</span><span class="p">(</span><span class="s">"port=%d"</span><span class="p">,</span> <span class="n">my_port</span><span class="p">))</span> <span class="k">begin</span>
+    <span class="n">my_port</span> <span class="o">=</span> <span class="mh">32</span><span class="mi">'d1234</span><span class="p">;</span>
+  <span class="k">end</span>
+
+  <span class="nb">$display</span><span class="p">(</span><span class="s">"my_port = %-d"</span><span class="p">,</span> <span class="n">my_port</span><span class="p">);</span>
+
+<span class="k">end</span>
+<span class="k">endmodule</span>
+</pre></div>
+
+<p>Here is the invocation for compiling the file (using VCS):</p>
+
+<pre><code>% vcs +v2k -sverilog test.sv
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>And here is the invocation for running said program (again, using VCS):</p>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+<pre><code>% simv
+my_port = 1234
+</code></pre>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<p>Now, when passing in the <code>+port=5678</code> plusarg, here is the invocation and results:</p>
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+<pre><code>% simv +port=5678
+my_port = 5678
+</code></pre>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<p>As you can see, no recompilation is necessary.</p>
 
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+<p>Now, say that you need to read in an array of plusargs. This might be useful for creating a look-up table of plusargs.</p>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<div class="highlight highlight-verilog"><pre><span class="k">module</span> <span class="n">test2</span><span class="p">;</span>
 
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
+<span class="c1">// Associative array with default values</span>
+<span class="kt">int</span> <span class="n">plusargs</span><span class="p">[</span><span class="k">string</span><span class="p">]</span> <span class="o">=</span> <span class="p">'{</span><span class="s">"a"</span><span class="o">:</span><span class="mh">1</span><span class="p">,</span> <span class="s">"b"</span><span class="o">:</span><span class="mh">2</span><span class="p">,</span> <span class="s">"c"</span><span class="o">:</span><span class="mh">3</span><span class="p">};</span>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+<span class="k">initial</span> <span class="k">begin</span>
+
+  <span class="n">get_plusarg</span><span class="p">(</span><span class="s">"a"</span><span class="p">);</span>
+  <span class="n">get_plusarg</span><span class="p">(</span><span class="s">"b"</span><span class="p">);</span>
+  <span class="n">get_plusarg</span><span class="p">(</span><span class="s">"c"</span><span class="p">);</span>
+
+  <span class="n">foreach</span> <span class="p">(</span><span class="n">plusargs</span><span class="p">[</span><span class="n">s</span><span class="p">])</span> <span class="k">begin</span>
+    <span class="nb">$display</span><span class="p">(</span><span class="s">"plusargs[%s] = %-d"</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">plusargs</span><span class="p">[</span><span class="n">s</span><span class="p">]);</span>
+  <span class="k">end</span>
+
+<span class="k">end</span>
+
+<span class="k">function</span> <span class="k">void</span> <span class="n">get_plusarg</span><span class="p">(</span><span class="k">string</span> <span class="n">name</span><span class="p">);</span>
+  <span class="err">$</span><span class="n">value</span><span class="err">$</span><span class="n">plusargs</span><span class="p">({</span><span class="n">name</span><span class="p">,</span> <span class="s">"=%d"</span><span class="p">},</span> <span class="n">plusargs</span><span class="p">[</span><span class="n">name</span><span class="p">]);</span>
+<span class="k">endfunction</span>
+
+<span class="k">endmodule</span>
+</pre></div>
+
+<p>We can compile with the following:</p>
+
+<pre><code>% vcs +v2k -sverilog test2.sv
+</code></pre>
+
+<p>And run with the following:</p>
+
+<pre><code>% simv
+plusargs[a] = 1
+plusargs[b] = 2
+plusargs[c] = 3
+</code></pre>
+
+<p>With plusargs:</p>
+
+<pre><code>% simv +a=12 +b=15
+plusargs[a] = 12
+plusargs[b] = 15
+plusargs[c] = 3
+</code></pre>
+
+<p>References:</p>
+
+<ul>
+<li><a href="http://stackoverflow.com/questions/16361272/passing-string-variables-to-plusargs-in-system-verilog">http://stackoverflow.com/questions/16361272/passing-string-variables-to-plusargs-in-system-verilog</a></li>
+<li><a href="http://www.sutherland-hdl.com/papers/2002-DesignCon-tutorial_using_Verilog-2001_part2.pdf">http://www.sutherland-hdl.com/papers/2002-DesignCon-tutorial_using_Verilog-2001_part2.pdf</a></li>
+</ul>
       </section>
+    </div>
 
-      <footer>
-        <span class="ribbon-outer">
-          <span class="ribbon-inner">
-            <p>Projects by <a href="https://github.com/cziesler">cziesler</a> can be found on <a href="https://github.com/cziesler">GitHub</a></p>
-          </span>
-          <span class="left-tail"></span>
-          <span class="right-tail"></span>
-        </span>
-        <p>Generated with <a href="http://pages.github.com">GitHub Pages</a> using Merlot</p>
-        <span class="octocat"></span>
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
-
     </div>
 
               <script type="text/javascript">
@@ -102,6 +184,7 @@ $ git checkout gh-pages
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
+
 
   </body>
 </html>
