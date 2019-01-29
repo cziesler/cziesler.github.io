@@ -1,0 +1,33 @@
+---
+layout: post
+title: "SVN Color Diff"
+date: 2019-01-29
+categories:
+  SVN
+---
+
+Perhaps you wanted to view your differences between your local modifications in your working copy in an SVN repository. You'd use [`svn diff`](http://svnbook.red-bean.com/en/1.8/svn.ref.svn.c.diff.html) for that, obviously. But what if you wanted to make that better?
+
+[colordiff](https://www.colordiff.org/) is a Perl script that wraps around diff, and displays the changes in color. The `svn --diff-cmd <cmd>` option allows you to replace the default command to show differences, allowing colordiff to be used instead.
+
+```sh
+svn diff --diff-cmd colordiff
+```
+
+I also like to ignore whitespace changes in my diffs. The `-x --ignore-all-space` option will be passed through to colordiff and ignore all white space changes.
+
+```sh
+svn diff --diff-cmd colordiff -x --ignore-all-space
+```
+
+What if I wanted to pass through another option? Luckily, `-x` can be specified multiple times, allowing multiple options to be passed to colordiff.
+
+```sh
+svn diff --diff-cmd colordiff -x --ignore-all-space -x -U0
+```
+
+Sometimes, the diffs exceed a single screen. Normally, [less](https://en.wikipedia.org/wiki/Less_(Unix)) would be used to paginate the result, but less doesn't play nice with the [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code). Luckily, the `less -R` option will correctly process the escape codes, and show the results in color.
+
+```sh
+svn diff --diff-cmd colordiff | less -R
+```
