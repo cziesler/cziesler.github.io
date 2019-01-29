@@ -16,9 +16,9 @@
 title: Cody Cziesler
 #email: 
 description: >- # this means to ignore newlines until "baseurl:"
-  My new blog.
+  My new blog
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://cziesler.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: cziesler
 github_username:  cziesler
 
@@ -30,7 +30,6 @@ plugins:
   - jekyll-feed
 
 disqus: cziesler
-disqus.shortname: cziesler
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list

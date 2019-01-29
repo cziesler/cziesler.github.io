@@ -1,0 +1,18 @@
+---
+layout: post
+title: "Jekyll Blog"
+date: 2019-01-28
+categories:
+  Jekyll
+---
+
+[Jekyll](https://jekyllrb.com) is a fantastic site generator for blogging. In fact, this blog is powered by it.
+
+To install it, follow the directions on the Jekyll website (https://jekyllrb.com/docs/installation/). The install was straight-forward -- simply make sure all the pre-reqs are installed (Ruby, RubyGems, GCC and Make), then use `gem` to install Jekyll and Bundles.
+
+A few neat links:
+
+* [http://ricardolopes.net/blog/setting-up-a-hackers-blog-with-jekyll/](http://ricardolopes.net/blog/setting-up-a-hackers-blog-with-jekyll/)
+* [http://michaelkant.com/blog/adding-disqus-comments-to-jekyll/](http://michaelkant.com/blog/adding-disqus-comments-to-jekyll/)
+* [http://chris.house/blog/building-a-simple-archive-page-with-jekyll/](http://chris.house/blog/building-a-simple-archive-page-with-jekyll/)
+* [https://coderwall.com/p/89p9kw/create-all-favicon-formats-in-mac-os-with-preview](https://coderwall.com/p/89p9kw/create-all-favicon-formats-in-mac-os-with-preview)
