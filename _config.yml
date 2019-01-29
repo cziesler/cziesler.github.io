@@ -16,11 +16,13 @@
 title: Cody Cziesler
 #email: 
 description: >- # this means to ignore newlines until "baseurl:"
-  My new blog
+  Digital IC Design Engineer, Programmer
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://cziesler.github.io" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: cziesler
-github_username:  cziesler
+
+twitter_username:  cziesler
+github_username:   cziesler
+linkedin_username: codycziesler
 
 # Build settings
 markdown: kramdown
@@ -30,6 +32,10 @@ plugins:
   - jekyll-feed
 
 disqus: cziesler
+
+google_analytics: UA-133444187-1
+
+show_excerpts: true
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
