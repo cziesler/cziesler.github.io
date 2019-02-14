@@ -1,9 +1,10 @@
 ---
 layout: post
 title: "Perk/Tk"
-date: 2019-02-13
+date: 2019-02-14
 categories:
   Perl
+  Perl/Tk
   GUI
 ---
 
@@ -14,9 +15,11 @@ Whenever I want to create a GUI, I normally go to [Perl/Tk](https://metacpan.org
 Below is a bare bones example.
 
 ```perl
+use warnings;
+use strict;
 use Tk;
 my $mw = MainWindow->new();
-$mw->Label(-text=>"Hello, world")->pack();
+$mw->Label(-text=>"Hello, world", -width=>50)->pack();
 MainLoop;
 ```
 
@@ -29,11 +32,13 @@ Let's break it down.
 After including the library (`use Tk`), the `MainWindow->new()` call will create the main window. The [MainWindow](https://metacpan.org/pod/distribution/Tk/pod/MainWindow.pod) is a [Toplevel](https://metacpan.org/pod/Tk::Toplevel) widget that does not have a Parent (`$mw->Parent == undef`). Since the MainWindow is a type of Toplevel, we can pass in any of the Toplevel options, and in turn any [Widget](https://metacpan.org/pod/distribution/Tk/pod/Widget.pod) options.
 
 ```perl
+use warnings;
+use strict;
 use Tk;
 my $mw = MainWindow->new(
   -title => "My First GUI",
 );
-$mw->Label(-text=>"Hello, world")->pack();
+$mw->Label(-text=>"Hello, world", -width=>50)->pack();
 MainLoop;
 ```
 
@@ -42,6 +47,8 @@ MainLoop;
 [Menubars](https://metacpan.org/pod/distribution/Tk/pod/Menu.pod) are a typical part of any GUI. To add one, simply create the Menu widget, and add it to the MainWindow. I like to follow the example in Chapter 12.2.2 in _Mastering Perl/TK_.
 
 ```perl
+use warnings;
+use strict;
 use Tk;
 my $mw = MainWindow->new(
   -title => "My First GUI",
@@ -58,13 +65,15 @@ $mw->configure(
     ],
   ),
 );
-$mw->Label(-text=>"Hello, world")->pack();
+$mw->Label(-text=>"Hello, world", -width=>50)->pack();
 MainLoop;
 ```
 
 Now notice that the accelerator option for Quit is set to "Ctrl-q". Unfortunately, this won't do anything on it's own -- we have to add some hotkeys. This is done by [binding to an event](https://metacpan.org/pod/distribution/Tk/pod/bind.pod). The first argument is a string containing the event (CTRL-Q in this case), and the second argument is a reference to the subroutine.
 
 ```perl
+use warnings;
+use strict;
 use Tk;
 my $mw = MainWindow->new(
   -title => "My First GUI",
@@ -82,15 +91,19 @@ $mw->configure(
   ),
 );
 $mw->bind("<Control-Key-q>", \&exit);
-$mw->Label(-text=>"Hello, world")->pack();
+$mw->Label(-text=>"Hello, world", -width=>50)->pack();
 MainLoop;
 ```
+
+![GUI With Menu](/assets/perk-tk/perl-tk-menu.png)
 
 One last thing that I like to add to my GUIs is the ability to run an external script and capture the output to a text box. I normally use a [ROText](https://metacpan.org/pod/distribution/Tk/pod/ROText.pod) widget, since this ensures the captured text can't be modified. I also need to add a `require Tk::ROText` to avoid a warning.
 
 I'll also add an [Entry](https://metacpan.org/pod/distribution/Tk/pod/Entry.pod) widget so that we can execute some commands.
 
 ```perl
+use warnings;
+use strict;
 use Tk;
 require Tk::ROText;
 my $mw = MainWindow->new(
@@ -110,7 +123,79 @@ $mw->configure(
 );
 $mw->bind("<Control-Key-q>", \&exit);
 my $t = $mw->ROText()->pack();
-my $c = $mw->Entry(-textvariable => my $command)->pack();
+my $c = $mw->Entry(-textvariable=>\(my $command))->pack(-fill=>'x');
 MainLoop;
 ```
 
+![GUI With ROText and Entry](/assets/perk-tk/perl-tk-rotext.png)
+
+As with before, we'll need to bind pressing _Enter_ in the Entry to do something useful. I like to use the [IPC::Open3](https://perldoc.perl.org/IPC/Open3.html) Perl module here for a few reasons --
+
+First, it allows me to separate out STDERR and STDOUT so that I could potentially highlight errors in another color. The [tagConfigure](https://metacpan.org/pod/distribution/Tk/pod/Text.pod#TAGS) subroutine can create those tags with various colors, fonts, and even links. To use the tag, simply pass the tag name as the last parameter to the `insert` subroutine.
+
+Second, it is non-blocking, meaning that the GUI will not stall while the command is executing. It also allows multiple commands to execute simultaneously.
+
+Third, it gives me file handles to use with [Tk::fileevent](https://metacpan.org/pod/Tk::fileevent). This command creates a file event handler that will execute whenever the file handle becomes readable or writable. In this case, the `fill_widget` routine will read data from the file handle, and insert that data into the `ROText` widget. If the file handle is empty, we assume that the command has finished and turn off that file event.
+
+```perl
+use warnings;
+use strict;
+use Tk;
+use Symbol;
+use IPC::Open3;
+require Tk::ROText;
+my $mw = MainWindow->new(
+  -title => "My First GUI",
+);
+$mw->configure(
+  -menu => $mw->Menu(
+    -menuitems => [
+      map [q/cascade/, $_->[0], -menuitems => $_->[1]],
+        ['~File',
+          [
+            [qw/command ~Quit -accelerator Ctrl-q -command/ => \&exit],
+          ],
+        ],
+    ],
+  ),
+);
+$mw->bind("<Control-Key-q>", \&exit);
+my $t = $mw->ROText()->pack();
+my $c = $mw->Entry(-textvariable=>\(my $command))->pack(-fill=>'x');
+$c->bind('<Return>' => sub {
+  my ($pid, $out, $err) = (0, gensym(), gensym());
+  eval{$pid = open3(undef, $out, $err, $command)};
+  if ($@) {
+    $t->insert('end', "ERROR executing '$command'\n");
+  } else {
+    $mw->fileevent($out, 'readable', sub{fill_widget($t, $out)});
+    $mw->fileevent($err, 'readable', sub{fill_widget($t, $err)});
+  }
+});
+MainLoop;
+
+sub fill_widget {
+  my ($t, $fh) = @_;
+  if (sysread($fh, my $data, 4096)) {
+    $t->insert('end', $data);
+  } else {
+    $mw->fileevent($fh, 'readable', '');
+  }
+  $t->yview('end');
+}
+```
+
+![GUI With Command](/assets/perk-tk/perl-tk-command.png)
+
+So in the end, we have a GUI written using the Perl/Tk framework. It has a menubar, hotkeys, and a way to asynchronously execute commands.
+
+Here's a few other Perl/Tk links:
+
+* [Tk::Button](https://metacpan.org/pod/distribution/Tk/pod/Button.pod)
+* [Tk::getOpenFile](https://metacpan.org/pod/distribution/Tk/pod/getOpenFile.pod)
+* [Tk::after](https://metacpan.org/pod/Tk::after)
+* [Re: tk: icon in bar (win32)](https://www.perlmonks.org/?node_id=455950)
+* [The Pixmap Image Type](https://nnc3.com/mags/Perl3/tk/ch17_06.htm)
+* [The HList Family of Widgets](https://nnc3.com/mags/Perl3/tk/ch18_04.htm)
+  * [Tk::HList](https://metacpan.org/pod/distribution/Tk/pod/HList.pod)
+  * [Tk::Tree](https://metacpan.org/pod/Tk::Tree)
