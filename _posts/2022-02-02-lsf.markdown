@@ -1,0 +1,253 @@
+---
+layout: post
+title: "LSF Introduction"
+date: 2022-02-02
+Categories:
+  LSF
+---
+
+[IBM Spectrum LSF](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0) (load sharing facility) is software to distribute work across heterogeneous resources.
+
+Here is some general terminology used by LSF:
+
+* Cluster -- a group of hosts running LSF
+  * `lscluster`
+* Hosts -- a computer in the cluster
+  * `lshosts`
+* Job -- a unit of work running on the LSF system
+  * `bjobs`
+* Job slot -- a bucket into which a single unit of work is assigned in the LSF system
+  * `bslots`
+* Queue -- a cluster-wide container for jobs
+  * `bqueues`
+* Resources -- objects in the system that can run work (including hosts, CPU slots, licenses)
+  * `lsinfo`
+
+## lsid
+
+General information about how LSF is setup is the [`lsid`](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=reference-lsid) command. This shows the LSF version (10.1.0.9), the cluster name (lsf-cluster) and the master name (lsf-master).
+
+```
+➜ lsid
+IBM Spectrum LSF Standard 10.1.0.9, Oct 16 2019
+Copyright International Business Machines Corp. 1992, 2016
+US Government Users Restricted Rights - Use, duplication or disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
+
+My cluster name is lsf-cluster
+My master name is lsf-master
+```
+
+## lsinfo
+
+The [`lsinfo`](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=reference-lsinfo) command lists the resources available in the cluster.
+
+```
+➜ lsinfo
+RESOURCE_NAME   TYPE   ORDER  DESCRIPTION
+...
+
+TYPE_NAME
+...
+
+MODEL_NAME             CPU_FACTOR
+...
+```
+
+## lshosts
+
+The [`lshosts`](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=reference-lshosts) command lists the resources defined for each host. The `-o` option can be used to display more [information](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=lshosts-customize-host-resource-information-output). And the `-json` option can display the information in JSON format.
+
+```
+➜ lshosts
+HOST_NAME      type    model  cpuf ncpus maxmem maxswp server RESOURCES 
+lsf-host0    X86_64 INTEL_EM  60.0    64   256G   256G    Yes ()
+lsf-host1    X86_64 INTEL_EM  60.0    32   256G   256G    Yes ()
+
+➜ lshosts -o "HOST_NAME ncpus nprocs ncores nthreads"
+HOST_NAME ncpus nprocs ncores nthreads
+lsf-host0 64 2 32 2
+lsf-host1 32 1 32 2
+```
+
+## lsload
+
+The [`lsload`](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=reference-lsload) command displays load information for the hosts. The `status` field shows the load status of the host, the `r15s`, `r1m`, and `r15m` fields show the CPU load averaged over different time intervals, `ut` field shows the percentage of time the CPU is in use, `pg` is the paging rate, `ls` is the total number of login sessions, `it` is the idle time, `tmp` is the available temporary disk space, `swp` is the available swap space, and `mem` is the available RAM.
+
+The `-l` option reports more information about each host. The `-o` option allows for setting the display information, similar to `lshosts` above.
+
+The `lsmon` command is an updating display of load information, similar to if `watch lsload` were called.
+
+```
+➜ lsload
+HOST_NAME   status  r15s  r1m r15m  ut    pg   ls   it  tmp  swp  mem
+lsf-host0       ok   1.1  1.2  1.5  1%   0.0    0  102  33G 3.9G 624G
+lsf-host1       ok   0.0  0.3  0.2  0%   0.0    0 8209  42G 3.9G 712G
+```
+
+## bsub
+
+Jobs are submitted to LSF using the [`bsub`](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=reference-bsub) command. Some common options include:
+
+* `-I` -- submit an interactive job
+* `-Is` -- submit an interactive job with a pseudo-terminal (such as for `vi`)
+* `-J <job_name>` -- assign a name to the job
+* `-Jd <job_description>` -- assign a job description to the job
+* `-P <project_name>` -- assign the job to the specified project
+* `-eo <error_file>` -- overwrite the standard error output of the job to the specified file path
+* `-m <host_name>` -- submit the job to be run on specific hosts
+* `-oo <output_file>` -- overwrite the standard output of the job to the specified file path
+* `-q <queue_name>` -- submit the job to one of the specified queues
+
+```
+➜ bsub date
+Job <1234> is submitted to default queue <normal>.
+
+➜ bsub -I date
+Job <1235> is submitted to default queue <interactive>.
+<<Waiting for dispatch ...>>
+<<Starting on lsf-host0>>
+Wed Feb  2 11:28:25 EST 2022
+```
+
+## bqueues
+
+The [`bqueues`](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=reference-bqueues) command lists the available job queues.
+
+A "-" means that the field does not apply to that queue. The `PRIO` field shows the priority of the queue -- the larger the number, the higher the priority. The `STATUS` field shows the status of the field (open or closed, and active or inactive). The `MAX` field shows the maximum number of job slots that can be used by jobs from the queue. `JL/U` shows the per-user job slot cap, and `JL/P` shows the per-processor job slot cap. `NJOBS` shows the total number of slots for jobs in the queue, summing up the pending, running, and suspended tasks. `PEND` shows the pending tasks, `RUN` shows the running tasks, and `SUSP` shows the suspended tasks.
+
+The `-l` option shows much more information about each queue, and the `-o` option allows for changing the fields shown for each queue.
+
+```
+➜ bqueues
+QUEUE_NAME     PRIO STATUS       MAX  JL/U JL/P NJOBS  PEND  RUN  SUSP
+priority         49 Open::Active   -     -    -     0     0    0     0
+normal           30 Open::Active   -     -    -     5     0    5     0
+interactive      30 Open::Active   -     -    -     3     1    2     0
+```
+
+## bslots
+
+The [`bslots`](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=reference-bslots) command displays information about available job slots.
+
+The `-l` option displays information in long format, including information about how many slots each host contains.
+
+Note that the number of jobs is not limited by the number of cores or threads available -- the operating system can easily switch between these jobs as needed.
+
+```
+➜ bslots
+SLOTS RUNTIME
+150   UNLIMITED
+
+➜ bslots -l
+SLOTS:    150
+RUNTIME:  UNLIMITED
+HOSTS:    100*lsf-host1 50*lsf-host2
+```
+
+## busers
+
+The [`busers`](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=reference-busers) command lists information about one or more LSF user account.
+
+Most of the fields are the same as the `bqueues` command, with `SSUSP` showing the number of tasks in system-suspended jobs, `USUSP` showing the number of tasks in user-suspended jobs, and `RSV` showing the number of tasks that reserve slots.
+
+If `busers all` is called, it will show information for all users.
+
+```
+➜ busers
+USER/GROUP JL/P MAX NJOBS PEND RUN SSUSP USUSP RSV
+cody          -   -     3    0   3     0     0   0
+```
+
+## bjobs
+
+The [`bjobs`](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=reference-bjobs) command shows information about all jobs submitted to LSF.
+
+```
+➜ bjobs
+JOBID USER  STAT  QUEUE    FROM_HOST EXEC_HOST JOB_NAME  SUBMIT_TIME
+1234  cody  RUN   normal   cody-mbp  lsf-host0 ./do      Feb 2 13:18
+```
+
+## bpeek
+
+The [`bpeek`](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=reference-bpeek) command shows the `stdout` and `stderr` output of an unfinished job.
+
+If the `-f` option is used, the output will be displayed with `tail -f`. Otherwise, `cat` is used to display the output.
+
+```
+➜ bpeek 1234
+<< output from stdout >>
+Wed Feb  2 13:18:41 EST 2022
+Wed Feb  2 13:18:46 EST 2022
+Wed Feb  2 13:18:51 EST 2022
+```
+
+## bkill
+
+The [`bkill`](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=reference-bkill) command will send a signal to kill, suspend, or resume unfinished jobs.
+
+By default, `bkill` will send the `KILL` signal. The `STOP` signal can be used to suspend a job, and the `CONT` signal to resume it. Note that the `bstop` and `bresume` commands could also be used to suspend or resume a job.
+
+Using `bkill` with a job ID of `0` will kill all jobs that match the other options (`-app`, `-g`, `-m`, `-q`, `-u`, and `-J`).
+
+```
+➜ bkill -s STOP 1234
+Job <1234> is being stopped
+
+➜ bjobs 1234
+JOBID USER  STAT  QUEUE    FROM_HOST EXEC_HOST JOB_NAME  SUBMIT_TIME
+1234  cody  USUSP normal   cody-mbp  lsf-host0 ./do      Feb 2 13:18
+
+➜ bkill -s CONT 1234
+Job <1234> is being resumed
+
+➜ bjobs 1234
+JOBID USER  STAT  QUEUE    FROM_HOST EXEC_HOST JOB_NAME  SUBMIT_TIME
+1234  cody  RUN   normal   cody-mbp  lsf-host0 ./do      Feb 2 13:18
+
+➜ bkill 1234
+Job <1234> is being terminated
+```
+
+## Common commands
+
+To get a high-level view of LSF performance, I typically run the following commands, normally in a `watch` command so that they continuously update.
+
+```
+# Get a list of all jobs being run
+➜ bjobs -w -u all -noheader | sort -k 2,2
+1234 cody RUN normal hostA lsf-host0 ./do
+1235 cody RUN normal hostA lsf-host0 ./run
+1236 cody RUN normal hostA lsf-host1 ./run -test
+```
+
+```
+# See if the hosts are running and if they are accepting jobs
+➜ bhosts
+HOST_NAME      type    model  cpuf ncpus maxmem maxswp server RESOURCES 
+lsf-host0    X86_64 INTEL_EM  60.0    64   256G   256G    Yes ()
+lsf-host1    X86_64 INTEL_EM  60.0    32   256G   256G    Yes ()
+```
+
+```
+# Check the status of the queues
+➜ bqueues
+QUEUE_NAME     PRIO STATUS       MAX  JL/U JL/P NJOBS  PEND  RUN  SUSP
+priority         49 Open::Active   -     -    -     0     0    0     0
+normal           30 Open::Active   -     -    -     5     0    5     0
+interactive      30 Open::Active   -     -    -     3     1    2     0
+```
+
+```
+# Look at which users are using LSF
+➜ busers -w all
+USER/GROUP JL/P MAX NJOBS PEND RUN SSUSP USUSP RSV
+ashley        -   -     0    0   0     0     0   0
+cody          -   -     3    0   3     0     0   0
+```
+
+## References
+
+* [IBM Spectrum LSF](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0)
+  * [LSF Command Reference](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=reference-command)
+* [lsf-python-api](https://github.com/IBMSpectrumComputing/lsf-python-api)
