@@ -12,7 +12,7 @@ source "https://rubygems.org"
 
 # This is the default theme for new Jekyll sites. You may change this to anything you like.
 #gem "minima", "~> 2.5.1"
-gem "minima", git: "https://github.com/jekyll/minima"
+gem "minima", :github => 'jekyll/minima'
 
 # If you want to use GitHub Pages, remove the "gem "jekyll"" above and
 # uncomment the line below. To upgrade, run `bundle update github-pages`.
@@ -23,13 +23,10 @@ group :jekyll_plugins do
   #gem "jekyll-feed", "~> 0.15.1"
 end
 
-#gem "jekyll-remote-theme"
-
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # For Cygwin
-#gem "json", "2.0.2"
 gem "bigdecimal"
 gem 'wdm', '>= 0.1.0' if Gem.win_platform?
 
@@ -37,4 +34,4 @@ gem 'wdm', '>= 0.1.0' if Gem.win_platform?
 gem "webrick"
 
 # https://stackoverflow.com/questions/63335953/jekyll-error-building-page-related-to-kramdown-parser
-gem "kramdown-parser-gfm"
+#gem "kramdown-parser-gfm"
