@@ -2,7 +2,7 @@
 layout: post
 title: "LSF Introduction"
 date: 2022-02-02
-Categories:
+categories:
   LSF
 ---
 

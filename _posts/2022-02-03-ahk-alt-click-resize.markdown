@@ -2,7 +2,7 @@
 layout: post
 title: "AutoHotkey Alt-Click Window Resize"
 date: 2022-02-03
-Categories:
+categories:
   AutoHotkey
 ---
 

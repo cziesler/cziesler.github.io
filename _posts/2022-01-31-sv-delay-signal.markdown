@@ -2,7 +2,7 @@
 layout: post
 title: "Delaying a signal by some number of clocks"
 date: 2022-01-31
-Categories:
+categories:
   SystemVerilog
   Makefile
 ---
