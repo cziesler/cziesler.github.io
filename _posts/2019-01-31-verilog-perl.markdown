@@ -2,6 +2,7 @@
 layout: post
 title: "Verilog-Perl"
 date: 2019-01-31
+last_modified_at: 2022-05-10
 categories:
   Perl
   Verilog
@@ -83,7 +84,9 @@ The properties I chose to display are for each module include, the following. Lu
 
 This obviously points to using recursion to walk through each module in the design, with submodules located under the "Cells".
 
-_Note: this is taken in large from the [`Verilog::Netlist`](https://metacpan.org/pod/Verilog::Netlist) example, but modified to add additional information._.
+_Note: this is taken in large from the [`Verilog::Netlist`](https://metacpan.org/pod/Verilog::Netlist) example, but modified to add additional information._
+
+**Update:** If a port of an instantiation is no connected, the original code will fail when trying to access `$pin->net->name`. The fix is to check if `$pin->net` is defined first before getting the `name`.
 
 ```perl
 foreach my $mod ($nl->top_modules_sorted) {
@@ -118,7 +121,7 @@ sub show_hier {
   foreach my $cell ($mod->cells_sorted) {
     printf($indent . "      Cell: %s\n", $cell->name);
     foreach my $pin ($cell->pins_sorted) {
-      printf($indent . "        .%s (%s)\n", $pin->name, $pin->net->name);
+      printf($indent . "        .%s (%s)\n", $pin->name, ($pin->net ? $pin->net->name : ""); # Updated 2022-05-10
     }
   }
   foreach my $cell ($mod->cells_sorted) {
