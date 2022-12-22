@@ -34,12 +34,14 @@ plugins:
   - jekyll-seo-tag
   - jekyll-remote-theme
 
+# https://stackoverflow.com/questions/74408145/minima-theme-build-shows-liquid-exception-invalid-syntax-for-include-tag-file/74420266#74420266
 minima:
   skin: dark
   social_links:
-    twitter: cziesler
-    github: cziesler
-    linkedin: codycziesler
+    - { platform: github, user_url: "https://github.com/cziesler/" }
+    - { platform: twitter, user_url: "https://twitter.com/cziesler" }
+    - { platform: linkedin, user_url: "https://www.linkedin.com/in/codycziesler/" }
+
 
 disqus: cziesler
 
