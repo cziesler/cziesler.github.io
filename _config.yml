@@ -46,7 +46,8 @@ minima:
 disqus: cziesler
 
 #google_analytics: UA-133444187-1
-google_analytics: G-135Y1S939E
+#google_analytics: G-135Y1S939E
+google_analytics: G-21L74BQ0VF
 
 show_excerpts: true
 
